@@ -53,12 +53,13 @@ def fetch_latest_emails(service, n):
             continue
 
         emails.append({
-            'id': msg['id'],
-            'threadId': msg['threadId'],
-            'subject': subject,
-            'sender': sender,
-            'date': date.strftime("%Y-%m-%d %H:%M:%S") if date else None,
-            'body': normalize_body(body.strip()) if body else ""
+            "metadata": {
+                "id": msg["id"],
+                "threadId": msg["threadId"],
+                "sender": sender,
+                "date": date.strftime("%Y-%m-%d %H:%M:%S") if date else None
+            },
+            "body": f"Subject: {subject}\nFrom: {sender}\nDate: {date}\n\n{normalize_body(body.strip()) if body else ''}"
         })
 
         if len(emails) == n:
