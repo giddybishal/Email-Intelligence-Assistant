@@ -55,7 +55,7 @@ def run_mail_embedding():
     build_faiss_index(docs)
     
     # Step 2: test query
-    query_faiss("job and work")
+    # query_faiss("job and work")
 
 if __name__ == "__main__":
     run_mail_embedding()
