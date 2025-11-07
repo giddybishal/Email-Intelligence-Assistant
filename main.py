@@ -1,9 +1,9 @@
-from mail_fetcher import authenticate_gmail, fetch_latest_emails, save_emails_to_json
+from mail_fetcher import run_mail_fetcher
+from mail_embedding import run_mail_embedding
 
 def main():
-    service = authenticate_gmail()
-    emails = fetch_latest_emails(service, 5) 
-    save_emails_to_json(emails)
+    run_mail_fetcher()
+    run_mail_embedding()
 
 if __name__ == '__main__':
     main()

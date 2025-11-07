@@ -5,9 +5,22 @@ from googleapiclient.discovery import build
 import os, json, base64
 import mailparser
 import html
+import re
 
 def normalize_body(body):
-    return html.unescape(body.encode('latin1', 'ignore').decode('utf-8', 'ignore'))
+    # Decode HTML entities and remove non-UTF-8 artifacts
+    text = html.unescape(body.encode('latin1', 'ignore').decode('utf-8', 'ignore'))
+
+    # Remove HTML tags like <a>, <div>, <p>, etc.
+    text = re.sub(r'<[^>]+>', ' ', text)
+
+    # Remove URLs (anything starting with http/https up to a space or newline)
+    text = re.sub(r'http[s]?://\S+', '', text)
+
+    # Remove excessive whitespace or line breaks
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -32,7 +45,7 @@ def authenticate_gmail():
 
 def fetch_latest_emails(service, n):
     # fetch IDs
-    results = service.users().messages().list(userId='me', maxResults=25).execute()
+    results = service.users().messages().list(userId='me', maxResults=50).execute()
     messages = results.get('messages', [])
     emails = []
 
@@ -71,8 +84,11 @@ def save_emails_to_json(emails, filename='emails.json'):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(emails, f, ensure_ascii=False, indent=4)
 
-if __name__ == "__main__":
+def run_mail_fetcher():
     service = authenticate_gmail()
-    emails = fetch_latest_emails(service, 2)
+    emails = fetch_latest_emails(service, 10)
     save_emails_to_json(emails)
     print("Fetched emails saved to emails.json")
+
+if __name__ == "__main__":
+    run_mail_fetcher()    
