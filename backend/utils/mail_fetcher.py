@@ -7,6 +7,9 @@ import mailparser
 import html
 import re
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+
 def normalize_body(body):
     # Decode HTML entities and remove non-UTF-8 artifacts
     text = html.unescape(body.encode('latin1', 'ignore').decode('utf-8', 'ignore'))
@@ -28,16 +31,18 @@ EXCLUDE = ['linkedin', 'internsathi', 'ngrok', 'himalayas', 'canva']
 
 def authenticate_gmail():
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    token_path = os.path.join(DATA_DIR, 'token.json')
+    creds_path = os.path.join(DATA_DIR, 'credentials.json')
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open(token_path, 'w') as token:
             token.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
@@ -81,7 +86,8 @@ def fetch_latest_emails(service, n):
     return emails
 
 def save_emails_to_json(emails, filename='emails.json'):
-    with open(filename, 'w', encoding='utf-8') as f:
+    path = os.path.join(DATA_DIR, filename)
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(emails, f, ensure_ascii=False, indent=4)
 
 def run_mail_fetcher():
