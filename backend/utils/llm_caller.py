@@ -24,7 +24,7 @@ conversation_chain = ConversationalRetrievalChain.from_llm(llm=llm, retriever=re
 
 def chat(message):
     result = conversation_chain.invoke({"question": message})
-    print(result["answer"])
+    return result["answer"]
 
 if __name__ == "__main__":
     print(chat('Are there any recent mails about my Internship?'))
