@@ -1,10 +1,9 @@
 function App() {
-
-  return (
+  return(
     <div>
-      Hello There
+      Hello there!
     </div>
   )
 }
 
-export default App
+export default App;
