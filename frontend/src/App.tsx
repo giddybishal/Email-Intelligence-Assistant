@@ -1,7 +1,9 @@
+import ChatUI from "./components/ChatUI";
+
 function App() {
   return(
     <div>
-      Hello there!
+      <ChatUI />
     </div>
   )
 }

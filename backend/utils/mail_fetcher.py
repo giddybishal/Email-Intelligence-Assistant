@@ -1,4 +1,5 @@
 from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -35,13 +36,29 @@ def authenticate_gmail():
     creds_path = os.path.join(DATA_DIR, 'credentials.json')
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-    if not creds or not creds.valid:
+
+    try:
+        # Refresh token if expired
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
+        elif not creds or not creds.valid:
+            # No valid credentials, trigger full OAuth flow
             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
+
+        # Save refreshed or new credentials
+        with open(token_path, 'w') as token:
+            token.write(creds.to_json())
+
+    except RefreshError as e:
+        print("⚠️ Refresh token invalid or revoked, re-authenticating...")
+        # Delete invalid token.json
+        if os.path.exists(token_path):
+            os.remove(token_path)
+        # Run new OAuth flow
+        flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
+        creds = flow.run_local_server(port=0)
+        # Save new credentials
         with open(token_path, 'w') as token:
             token.write(creds.to_json())
 
