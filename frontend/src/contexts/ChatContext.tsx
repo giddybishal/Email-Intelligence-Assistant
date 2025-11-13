@@ -1,48 +1,43 @@
-import { createContext, useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import { createContext } from "react"
+import type { ReactNode } from "react"
 
-interface ChatContextType {
-  messages: { role: string; content: string }[];
-  sendMessage: (message: string) => void;
+interface ChatContextType{
+  getReply: (msg: string) => Promise<string>
 }
 
-interface ChatProviderProps {
-  children: ReactNode;
+interface ChatProviderProps{
+  children: ReactNode
 }
 
-export const ChatContext = createContext<ChatContextType | null>(null);
+export const ChatContext = createContext<ChatContextType | null>(null)
 
-export function ChatProvider({ children }: ChatProviderProps) {
-  const [reply, setReply] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+export function ChatProvider({ children } : ChatProviderProps) {
+  const BACKEND_URL = "http://127.0.0.1:8000"
 
-  const BACKEND_URL = "http://127.0.0.1:8000";
-
-  async function getReply(msg: string) {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`${BACKEND_URL}/query`, {
+  async function getReply(msg: string): Promise<string> {
+    try{
+      const res = await fetch(`${BACKEND_URL}/query`,{
         method: "POST",
-        body: msg,
-      });
-      if (res.status === 200) {
-        const data = await res.json();
-        setReply(data);
-        console.log(data);
-      } else {
-        const errData = await res.json();
-        alert(errData.detail || "Failed to send the message");
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: msg }),
+      })
+      if (res.ok){
+        const data = await res.json()
+        return data ?? 'No response'
+      } else{
+        const errData = await res.json()
+        alert(errData.detail || "Failed to send the message")
+        return 'There was an error'
       }
-    } catch (err) {
-      console.error("Error sending message:", err);
-    } finally {
-      setIsLoading(false);
+    } catch (err){
+      console.error("Error sending message:", err)
+      return 'There was an error'
     }
   }
 
   return (
-    <ChatProvider.Provider value={{ getReply, isLoading, setIsLoading }}>
+    <ChatContext.Provider value={{ getReply }}>
       {children}
-    </ChatProvider.Provider>
+    </ChatContext.Provider>
   );
 }

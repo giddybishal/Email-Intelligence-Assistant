@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+import { ChatContext } from "@/contexts/ChatContext";
+
 export default function ChatUI() {
+  const context = useContext(ChatContext)
+  if (!context) throw new Error("ChatWindow must be used within ChatProvider")
+
+  const { getReply } = context
+
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Hello! How can I help you today?" },
   ]);
@@ -19,15 +26,15 @@ export default function ChatUI() {
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
-    // Simulate LLM reply — replace this with your backend call
-    const reply = { role: "assistant", content: `**You said:** ${input}` };
-    setTimeout(() => setMessages((m) => [...m, reply]), 600);
+    const contextReply = await getReply(input)
+    const reply = { role: "assistant", content: contextReply};
+    setMessages((m) => [...m, reply])
   };
 
   return (
     <Card className="w-full max-w-3xl mx-auto flex flex-col h-[80vh]">
-      <CardContent className="flex flex-col flex-1 p-0">
-        <ScrollArea className="flex-1 p-4 space-y-4">
+      <CardContent className="flex flex-col flex-1 p-0 max-h-full">
+        <ScrollArea className="flex-1 p-4 space-y-4 max-h-[90%]">
           {messages.map((msg, idx) => (
             <div
               key={idx}

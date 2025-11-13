@@ -1,10 +1,16 @@
-import ChatUI from "./components/ChatUI";
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { ChatProvider } from "./contexts/ChatContext"
+import MainPage from "./pages/mainPage";
 
 function App() {
   return(
-    <div>
-      <ChatUI />
-    </div>
+    <BrowserRouter>
+      <ChatProvider>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+        </Routes>
+      </ChatProvider>
+    </BrowserRouter>
   )
 }
 
