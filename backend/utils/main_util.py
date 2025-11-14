@@ -6,7 +6,7 @@ from .llm_caller import chat
 
 DATA_DIR = "data"
 LAST_FETCH_FILE = os.path.join(DATA_DIR, "last_fetch.txt")
-FETCH_INTERVAL = timedelta(minutes=5)
+FETCH_INTERVAL = timedelta(minutes=60)
 
 def main(message):
     # --- Only fetch emails if interval passed ---

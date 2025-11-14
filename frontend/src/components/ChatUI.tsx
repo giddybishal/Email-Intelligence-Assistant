@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -15,26 +15,37 @@ export default function ChatUI() {
 
   const { getReply } = context
 
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hello! How can I help you today?" },
-  ]);
+  interface Message{
+    role: "user" | "assistant"
+    content:string
+  }
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const userMsg = { role: "user", content: input };
+    const userMsg: Message = { role: "user", content: input };
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
     const contextReply = await getReply(input)
-    const reply = { role: "assistant", content: contextReply};
+    const reply: Message = { role: "assistant", content: contextReply};
     setMessages((m) => [...m, reply])
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto flex flex-col h-[80vh]">
+    <Card className="w-full flex flex-col h-screen">
       <CardContent className="flex flex-col flex-1 p-0 max-h-full">
-        <ScrollArea className="flex-1 p-4 space-y-4 max-h-[90%]">
+        {
+        messages.length === 0 &&
+        <CardHeader>
+            <div className="text-center font-bold text-2xl">
+              How can I help you today, Bishal?
+            </div>
+        </CardHeader>
+        }
+          <ScrollArea className="flex-1 p-4 space-y-4 max-h-[90%]">
           {messages.map((msg, idx) => (
             <div
               key={idx}
@@ -43,12 +54,12 @@ export default function ChatUI() {
               }`}
             >
               {msg.role === "assistant" && (
-                <Avatar>
+                <Avatar className="my-2">
                   <AvatarFallback>AI</AvatarFallback>
                 </Avatar>
               )}
               <div
-                className={`rounded-2xl px-4 py-2 max-w-[80%] text-sm ${
+                className={`rounded-2xl my-2 px-4 py-2 max-w-[80%] text-sm ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
@@ -59,7 +70,7 @@ export default function ChatUI() {
                 </ReactMarkdown>
               </div>
               {msg.role === "user" && (
-                <Avatar>
+                <Avatar className="my-2">
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
               )}
